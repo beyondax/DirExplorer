@@ -1,18 +1,25 @@
 package com.example.direxplorer;
 
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import java.io.File;
 
 public class DirPath implements Parcelable {
 
-    private String dirPathName;
 
-    public DirPath(String dirPathName) {
+    private String dirPathName;
+    private String name;
+    boolean isFolder;
+
+    public DirPath(String dirPathName, String name, boolean isFolder) {
+        this.name = name;
+        this.isFolder = isFolder;
         this.dirPathName = dirPathName;
     }
 
@@ -31,17 +38,37 @@ public class DirPath implements Parcelable {
         dest.writeString(this.dirPathName);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     protected DirPath(Parcel in) {
         this.dirPathName = in.readString();
+        this.name = in.readString();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            this.isFolder = in.readBoolean();
+        }
     }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public boolean isFolder() {
+        return isFolder;
+    }
+
 
     @NonNull
     @Override
     public String toString() {
-        return "" + dirPathName;
+        if (isFolder) {
+            return getDirPathName();
+        } else {
+            return getName();
+        }
     }
 
     public static final Parcelable.Creator<DirPath> CREATOR = new Parcelable.Creator<DirPath>() {
+        @RequiresApi(api = Build.VERSION_CODES.Q)
         @Override
         public DirPath createFromParcel(Parcel source) {
             return new DirPath(source);

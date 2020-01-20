@@ -10,11 +10,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class DirRecyclerViewAdapter<DirPath> extends RecyclerView.Adapter<DirRecyclerViewAdapter.MyViewHolder>  {
+public class DirRecyclerViewAdapter extends RecyclerView.Adapter<DirRecyclerViewAdapter.MyViewHolder>  {
 
     private static final String TAG = "DirRecyclerViewAdapter";
-    private ArrayList<DirPath> mDirPathsList = new ArrayList<>();
+    private ArrayList<DirPath> mDirPathsList;
     private OnClickListener mOnClickListener;
 
 
@@ -32,6 +33,7 @@ public class DirRecyclerViewAdapter<DirPath> extends RecyclerView.Adapter<DirRec
 
     @Override
     public void onBindViewHolder(@NonNull DirRecyclerViewAdapter.MyViewHolder holder, int position) {
+
         holder.dirPathTextView.setText(mDirPathsList.get(position).toString());
         Log.d(TAG, "onBindViewHolder: " + mDirPathsList.get(position).toString());
     }
