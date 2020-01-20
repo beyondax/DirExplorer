@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DirExplorer</string>
+    <string name="no_permission">Not granted!</string>
+    <string name="granted_permission">Permission already granted!</string>
 </resources>

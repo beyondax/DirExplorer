@@ -3,16 +3,14 @@ package com.example.direxplorer;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,7 +21,7 @@ import java.util.ArrayList;
 public class CurrentDirActivity extends AppCompatActivity implements OnClickListener {
 
     private static final String TAG = "CurrentDirActivity";
-    private static final int STORAGE_PERMISSION_CODE = 23;
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 100;
     private ArrayList<DirPath> mDirPathList = new ArrayList<>();
 
 
@@ -35,9 +33,15 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        getDirPath();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+        } else {
+            getDirPath();
+        }
+
+        setContentView(R.layout.activity_main);
 
         mRecyclerView = findViewById(R.id.root_dir_list);
         mRecyclerView.setHasFixedSize(true);
@@ -49,40 +53,49 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
 
         mAdapter = new DirRecyclerViewAdapter(mDirPathList, this);
         mRecyclerView.setAdapter(mAdapter);
-        
 
         Log.d(TAG, "onCreate: " + mDirPathList.size());
+
     }
 
 
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-        //Checking the request code of our request
-        if(requestCode == STORAGE_PERMISSION_CODE){
-
-            //If permission is granted
-            if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-
-                //Displaying a toast
-                Toast.makeText(this,"Permission granted now you can read the storage",Toast.LENGTH_LONG).show();
-            } else {
-                //Displaying another toast if permission is not granted
-                Toast.makeText(this,"Oops you just denied the permission",Toast.LENGTH_LONG).show();
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay!
+                    Toast.makeText(getApplicationContext(), R.string.granted_permission, Toast.LENGTH_SHORT).show();
+                    Intent intent = getIntent();
+                    finish();
+                    startActivity(intent);
+                    getDirPath();
+                } else {
+                    // permission denied, boo!
+                    Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
+                }
+                return;
             }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
         }
     }
 
     @Override
     public void onCellClicked(int position) {
         Log.d(TAG, "onCellClicked() called with: position = [" + position + "]");
-        Intent intent = new Intent(this, SelectedDirActivity.class);
-        intent.putExtra("name", mDirPathList.get(position));
+//        Intent intent = new Intent(this, SelectedDirActivity.class);
+//        intent.putExtra("name", mDirPathList.get(position));
 //        startActivity(intent);
     }
 
     public void getDirPath() {
 
-        File file = new File(Environment.getExternalStorageDirectory().toString());
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
         File[] files = file.listFiles();
         Log.d(TAG, "getDirPath: " + files.length);
         int i = 0;
@@ -101,7 +114,6 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
         }
     }

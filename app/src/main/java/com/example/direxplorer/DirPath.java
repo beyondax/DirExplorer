@@ -8,8 +8,6 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import java.io.File;
-
 public class DirPath implements Parcelable {
 
 
@@ -23,7 +21,7 @@ public class DirPath implements Parcelable {
         this.dirPathName = dirPathName;
     }
 
-    public String getDirPathName() {
+    public String getDirPath() {
         return dirPathName;
     }
 
@@ -61,7 +59,7 @@ public class DirPath implements Parcelable {
     @Override
     public String toString() {
         if (isFolder) {
-            return getDirPathName();
+            return getDirPath();
         } else {
             return getName();
         }
