@@ -79,18 +79,13 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
                 }
                 return;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request.
         }
     }
 
     @Override
     public void onCellClicked(int position) {
         Log.d(TAG, "onCellClicked() called with: position = [" + position + "]");
-//        Intent intent = new Intent(this, SelectedDirActivity.class);
-//        intent.putExtra("name", mDirPathList.get(position));
-//        startActivity(intent);
+        mDirPathList.get(position).getDirPath();
     }
 
     public void getDirPath() {
