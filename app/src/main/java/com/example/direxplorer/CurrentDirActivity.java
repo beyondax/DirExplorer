@@ -21,13 +21,16 @@ import java.util.ArrayList;
 public class CurrentDirActivity extends AppCompatActivity implements OnClickListener {
 
     private static final String TAG = "CurrentDirActivity";
+    private static final String DEFAULT_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 100;
     private ArrayList<DirPath> mDirPathList = new ArrayList<>();
+
 
 
     private RecyclerView mRecyclerView;
     protected RecyclerView.Adapter<DirRecyclerViewAdapter.MyViewHolder> mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private ArrayList<DirPath> mNewPathList = new ArrayList<>();
 
 
     @Override
@@ -38,7 +41,8 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
             // Permission is not granted
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
         } else {
-            getDirPath();
+            getDirPath(DEFAULT_PATH, mDirPathList);
+
         }
 
         setContentView(R.layout.activity_main);
@@ -69,10 +73,9 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay!
                     Toast.makeText(getApplicationContext(), R.string.granted_permission, Toast.LENGTH_SHORT).show();
-                    Intent intent = getIntent();
-                    finish();
-                    startActivity(intent);
-                    getDirPath();
+                    startOver();
+
+
                 } else {
                     // permission denied, boo!
                     Toast.makeText(getApplicationContext(), R.string.no_permission, Toast.LENGTH_SHORT).show();
@@ -85,31 +88,54 @@ public class CurrentDirActivity extends AppCompatActivity implements OnClickList
     @Override
     public void onCellClicked(int position) {
         Log.d(TAG, "onCellClicked() called with: position = [" + position + "]");
-        mDirPathList.get(position).getDirPath();
+
+        if (mDirPathList.size() != 0 & mDirPathList.get(position).isFolder()) {
+
+            getDirPath(mDirPathList.get(position).getDirPath(), mNewPathList);
+
+            mDirPathList.clear();
+            mDirPathList.addAll(mNewPathList);
+            mNewPathList.clear();
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
-    public void getDirPath() {
-
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
+    public ArrayList<DirPath> getDirPath(String path, ArrayList<DirPath> arrayList) {
+        File file = new File(path);
         File[] files = file.listFiles();
         Log.d(TAG, "getDirPath: " + files.length);
         int i = 0;
         for (File f : files) {
             if (f.isFile()) {
                 try {
-                    mDirPathList.add(i, new DirPath(f.getPath(), f.getName(), false));
+                    arrayList.add(i, new DirPath(f.getPath(), f.getName(), false));
                     i++;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             } else {
                 try {
-                    mDirPathList.add(i, new DirPath(f.getPath(), f.getName(), true));
+                    arrayList.add(i, new DirPath(f.getPath(), f.getName(), true));
                     i++;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+        return arrayList;
+    }
+
+    public void startOver() {
+        finish();
+        Intent intent = getIntent();
+        startActivity(intent);
+        getDirPath(DEFAULT_PATH, mDirPathList);
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed Called");
+        startOver();
     }
 }
